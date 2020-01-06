@@ -18,38 +18,38 @@ public class Leilao implements Serializable {
     public Leilao(String descricao) {
         this.id = 0L;
         this.descricao = descricao;
-        this.lances = new ArrayList<>();
+        this.lances = new ArrayList<> ();
     }
 
     public void propoe(Lance lance) {
-        valida(lance);
-        lances.add(lance);
-        Collections.sort(lances);
+        valida ( lance );
+        lances.add ( lance );
+        Collections.sort ( lances );
     }
 
     private void valida(Lance lance) {
-        double valorLance = lance.getValor();
-        if (lanceForMenorQueOUltimoLance(valorLance))
-            throw new LanceMenorQueUltimoLanceException();
-        if (temLances()) {
-            Usuario usuarioNovo = lance.getUsuario();
-            if (usuarioForOMesmoDoUltimoLance(usuarioNovo))
-                throw new LanceSeguidoDoMesmoUsuarioException();
-            if (usuarioDeuCincoLances(usuarioNovo))
-                throw new UsuarioJaDeuCincoLancesException();
+        double valorLance = lance.getValor ();
+        if (lanceForMenorQueOUltimoLance ( valorLance ))
+            throw new LanceMenorQueUltimoLanceException ();
+        if (temLances ()) {
+            Usuario usuarioNovo = lance.getUsuario ();
+            if (usuarioForOMesmoDoUltimoLance ( usuarioNovo ))
+                throw new LanceSeguidoDoMesmoUsuarioException ();
+            if (usuarioDeuCincoLances ( usuarioNovo ))
+                throw new UsuarioJaDeuCincoLancesException ();
         }
     }
 
     private boolean temLances() {
-        return !lances.isEmpty();
+        return !lances.isEmpty ();
     }
 
     private boolean usuarioDeuCincoLances(Usuario usuarioNovo) {
         int lancesDoUsuario = 0;
         for (Lance l :
                 lances) {
-            Usuario usuarioExistente = l.getUsuario();
-            if (usuarioExistente.equals(usuarioNovo)) {
+            Usuario usuarioExistente = l.getUsuario ();
+            if (usuarioExistente.equals ( usuarioNovo )) {
                 lancesDoUsuario++;
                 if (lancesDoUsuario == 5) {
                     return true;
@@ -60,26 +60,26 @@ public class Leilao implements Serializable {
     }
 
     private boolean usuarioForOMesmoDoUltimoLance(Usuario usuarioNovo) {
-        Usuario ultimoUsuario = lances.get(0).getUsuario();
-        return usuarioNovo.equals(ultimoUsuario);
+        Usuario ultimoUsuario = lances.get ( 0 ).getUsuario ();
+        return usuarioNovo.equals ( ultimoUsuario );
     }
 
     private boolean lanceForMenorQueOUltimoLance(double valorLance) {
-        return getMaiorLance() > valorLance;
+        return getMaiorLance () > valorLance;
     }
 
     public double getMenorLance() {
-        if (lances.isEmpty()) {
+        if (lances.isEmpty ()) {
             return 0.0;
         }
-        return lances.get(lances.size() - 1).getValor();
+        return lances.get ( lances.size () - 1 ).getValor ();
     }
 
     public double getMaiorLance() {
-        if (lances.isEmpty()) {
+        if (lances.isEmpty ()) {
             return 0.0;
         }
-        return lances.get(0).getValor();
+        return lances.get ( 0 ).getValor ();
     }
 
     public String getDescricao() {
@@ -87,15 +87,32 @@ public class Leilao implements Serializable {
     }
 
     public List<Lance> tresMaioresLances() {
-        int quantidadeMaximaLances = lances.size();
+        int quantidadeMaximaLances = lances.size ();
         if (quantidadeMaximaLances > 3) {
             quantidadeMaximaLances = 3;
         }
-        return lances.subList(0, quantidadeMaximaLances);
+        return lances.subList ( 0, quantidadeMaximaLances );
     }
 
     public Long getId() {
         return id;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass () != o.getClass ()) return false;
+
+        Leilao leilao = (Leilao) o;
+
+        if (id != leilao.id) return false;
+        return descricao.equals ( leilao.descricao );
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (id ^ (id >>> 32));
+        result = 31 * result + descricao.hashCode ();
+        return result;
+    }
 }

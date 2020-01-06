@@ -21,8 +21,6 @@ import br.com.alura.leilao.model.Lance;
 import br.com.alura.leilao.model.Usuario;
 import br.com.alura.leilao.ui.activity.ListaUsuarioActivity;
 
-import static br.com.alura.leilao.ui.dialog.AvisoDialogManager.mostraAvisoValorInvalido;
-
 public class NovoLanceDialog {
 
     private static final String TITULO = "Novo lance";
@@ -35,6 +33,7 @@ public class NovoLanceDialog {
     private final Context context;
     private final LanceCriadoListener listener;
     private final UsuarioDAO dao;
+    private final AvisoDialogManager manager = new AvisoDialogManager ();
 
     public NovoLanceDialog(Context context,
                            LanceCriadoListener listener,
@@ -106,7 +105,7 @@ public class NovoLanceDialog {
                     Lance novoLance = new Lance(usuario, valor);
                     listener.lanceCriado(novoLance);
                 } catch (NumberFormatException e) {
-                    mostraAvisoValorInvalido(context);
+                    manager.mostraAvisoValorInvalido(context);
                 }
             }
         };

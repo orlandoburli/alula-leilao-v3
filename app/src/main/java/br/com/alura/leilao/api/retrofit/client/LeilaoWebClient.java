@@ -1,5 +1,7 @@
 package br.com.alura.leilao.api.retrofit.client;
 
+import android.content.Context;
+
 import java.util.List;
 
 import br.com.alura.leilao.api.retrofit.RetrofitInicializador;
@@ -55,5 +57,6 @@ public class LeilaoWebClient {
     private boolean temDados(Response<List<Leilao>> response) {
         return response.isSuccessful() && response.body() != null;
     }
+
 
 }

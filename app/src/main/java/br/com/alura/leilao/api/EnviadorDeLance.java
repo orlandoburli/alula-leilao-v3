@@ -9,11 +9,8 @@ import br.com.alura.leilao.exception.LanceSeguidoDoMesmoUsuarioException;
 import br.com.alura.leilao.exception.UsuarioJaDeuCincoLancesException;
 import br.com.alura.leilao.model.Lance;
 import br.com.alura.leilao.model.Leilao;
+import br.com.alura.leilao.ui.dialog.AvisoDialogManager;
 
-import static br.com.alura.leilao.ui.dialog.AvisoDialogManager.mostraAvisoLanceMenorQueUltimoLance;
-import static br.com.alura.leilao.ui.dialog.AvisoDialogManager.mostraAvisoLanceSeguidoDoMesmoUsuario;
-import static br.com.alura.leilao.ui.dialog.AvisoDialogManager.mostraAvisoUsuarioJaDeuCincoLances;
-import static br.com.alura.leilao.ui.dialog.AvisoDialogManager.mostraToastFalhaNoEnvio;
 
 public class EnviadorDeLance {
 
@@ -21,12 +18,16 @@ public class EnviadorDeLance {
     private final LanceProcessadoListener listener;
     private final Context context;
 
+    private final AvisoDialogManager manager;
+
     public EnviadorDeLance(LeilaoWebClient client,
                            LanceProcessadoListener listener,
-                           Context context) {
+                           Context context,
+                           AvisoDialogManager manager) {
         this.client = client;
         this.listener = listener;
         this.context = context;
+        this.manager = manager;
     }
 
     public void envia(final Leilao leilao, Lance lance) {
@@ -40,20 +41,19 @@ public class EnviadorDeLance {
 
                 @Override
                 public void falha(String mensagem) {
-                    mostraToastFalhaNoEnvio(context);
+                    manager.mostraToastFalhaNoEnvio(context);
                 }
             });
         } catch (LanceMenorQueUltimoLanceException exception) {
-            mostraAvisoLanceMenorQueUltimoLance(context);
+            manager.mostraAvisoLanceMenorQueUltimoLance(context);
         } catch (LanceSeguidoDoMesmoUsuarioException exception) {
-            mostraAvisoLanceSeguidoDoMesmoUsuario(context);
+            manager.mostraAvisoLanceSeguidoDoMesmoUsuario(context);
         } catch (UsuarioJaDeuCincoLancesException exception) {
-            mostraAvisoUsuarioJaDeuCincoLances(context);
+            manager.mostraAvisoUsuarioJaDeuCincoLances(context);
         }
     }
 
     public interface LanceProcessadoListener {
         void processado(Leilao leilao);
     }
-
 }

@@ -53,8 +53,13 @@ public class ListaLeilaoAdapter extends RecyclerView.Adapter<ListaLeilaoAdapter.
     public void atualiza(List<Leilao> leiloes) {
         this.leiloes.clear();
         this.leiloes.addAll(leiloes);
+        atualizaLista ();
+    }
+
+    public void atualizaLista() {
         notifyDataSetChanged();
     }
+
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -79,7 +84,6 @@ public class ListaLeilaoAdapter extends RecyclerView.Adapter<ListaLeilaoAdapter.
             descricao.setText(leilao.getDescricao());
             maiorLance.setText(formatadorDeMoeda.formata(leilao.getMaiorLance()));
         }
-
     }
 
     private Leilao pegaLeilaoPorPosicao(int posicao) {
