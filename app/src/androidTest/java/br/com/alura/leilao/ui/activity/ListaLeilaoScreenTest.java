@@ -1,6 +1,9 @@
 package br.com.alura.leilao.ui.activity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.espresso.matcher.BoundedMatcher;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
@@ -18,6 +21,8 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 
+import br.com.alura.leilao.BaseTesteIntegracao;
+import br.com.alura.leilao.BuildConfig;
 import br.com.alura.leilao.R;
 import br.com.alura.leilao.api.retrofit.client.TesteWebClient;
 import br.com.alura.leilao.formatter.FormatadorDeMoeda;
@@ -34,12 +39,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 @RunWith(AndroidJUnit4.class)
-public class ListaLeilaoScreenTest {
+public class ListaLeilaoScreenTest extends BaseTesteIntegracao {
 
-    public static final String MSG_BANCO_DE_DADOS_NÃO_FOI_LIMPO = "Banco de dados não foi limpo!";
-    public static final String MSG_LEILAO_NAO_FOI_SALVO = "Leilão não foi salvo";
-    private final TesteWebClient leilaoWebClient = new TesteWebClient ();
-    private final FormatadorDeMoeda formatadorDeMoeda = new FormatadorDeMoeda ();
     @Rule
     public ActivityTestRule<ListaLeilaoActivity> activityTestRule
             = new ActivityTestRule<> ( ListaLeilaoActivity.class, true, false );
@@ -127,10 +128,31 @@ public class ListaLeilaoScreenTest {
                 .check ( matches ( apareceLeilao ( 1, "Computador", 0.00 ) ) );
     }
 
+    @Test
+    public void deve_AparecerUltimoLeilao_QuandoCarregarDezLeiloesDaApi() throws IOException {
+        tentaSalvarLeilaoNaApi (
+                "Carro",
+                "Computador",
+                "TV",
+                "Notebook",
+                "Console",
+                "Jogo",
+                "Estante",
+                "Quadro",
+                "Smartphone",
+                "Casa" );
+
+        activityTestRule.launchActivity ( new Intent () );
+
+        onView ( withId ( R.id.lista_leilao_recyclerview ) )
+                .perform ( RecyclerViewActions.scrollToPosition ( 9 ) )
+                .check ( matches ( apareceLeilao ( 9, "Casa", 0.00 ) ) );
+
+    }
+
     private Matcher<? super View> apareceLeilao(final int posicao,
                                                 final String descricaoEsperada,
                                                 final double maiorLanceEsperado) {
-
 
         return new BoundedMatcher<View, RecyclerView> ( RecyclerView.class ) {
 
@@ -157,21 +179,30 @@ public class ListaLeilaoScreenTest {
 
                 View viewDoViewHolder = viewHolder.itemView;
 
-                TextView textViewDescricao = viewDoViewHolder.findViewById ( R.id.item_leilao_descricao );
+                boolean temDescricaoEsperada  = apareceDescricaoEsperada ( viewDoViewHolder );
+                boolean temMaiorLanceEsperado = apareceMaiorLanceEsperado ( viewDoViewHolder );
 
-                boolean temDescricaoEsperada = textViewDescricao.getText ()
-                        .toString ().equals ( descricaoEsperada );
+                return temDescricaoEsperada &&
+                        temMaiorLanceEsperado &&
+                        displayed.matches ( viewDoViewHolder );
+            }
 
+            private boolean apareceMaiorLanceEsperado(View viewDoViewHolder) {
                 TextView textViewMaiorLance = viewDoViewHolder.findViewById ( R.id.item_leilao_maior_lance );
 
-                FormatadorDeMoeda formatador = new FormatadorDeMoeda ();
+                return textViewMaiorLance.getText ().toString ()
+                        .equals ( formatadorDeMoeda.formata ( maiorLanceEsperado ) )
+                        &&
+                        displayed.matches ( textViewMaiorLance );
+            }
 
-                boolean temMaiorLanceEsperado = textViewMaiorLance.getText ().toString ()
-                        .equals ( formatador.formata ( maiorLanceEsperado ) );
+            private boolean apareceDescricaoEsperada(View viewDoViewHolder) {
+                TextView textViewDescricao = viewDoViewHolder.findViewById ( R.id.item_leilao_descricao );
 
-
-                return temDescricaoEsperada && temMaiorLanceEsperado && displayed.matches ( viewDoViewHolder );
-
+                return textViewDescricao.getText ()
+                        .toString ().equals ( descricaoEsperada )
+                        &&
+                        displayed.matches ( textViewDescricao );
             }
         };
     }
@@ -179,17 +210,5 @@ public class ListaLeilaoScreenTest {
     @After
     public void tearDown() throws IOException {
         this.limpaDados ();
-    }
-
-    private void limpaDados() throws IOException {
-        if (!leilaoWebClient.limpaDados ())
-            fail ( MSG_BANCO_DE_DADOS_NÃO_FOI_LIMPO );
-    }
-
-    private void tentaSalvarLeilaoNaApi(String... leiloes) throws IOException {
-        for (String nome : leiloes) {
-            Leilao leilao = leilaoWebClient.salva ( new Leilao ( nome ) );
-            assertNotNull ( MSG_LEILAO_NAO_FOI_SALVO, leilao );
-        }
     }
 }
